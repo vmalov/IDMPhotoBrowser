@@ -135,20 +135,22 @@ caption = _caption;
             // Load async from file
             [self performSelectorInBackground:@selector(loadImageFromFileAsync) withObject:nil];
         } else if (_photoURL) {
-            // Load async from web (using SDWebImageManager)
-            SDWebImageManager *manager = [SDWebImageManager sharedManager];
-            [manager loadImageWithURL:_photoURL options:SDWebImageRetryFailed|SDWebImageHandleCookies progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
-                CGFloat progress = ((CGFloat)receivedSize)/((CGFloat)expectedSize);
-                if (self.progressUpdateBlock) {
-                    self.progressUpdateBlock(progress);
-                }
-            } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
-                if (image) {
-                    self.underlyingImage = image;
-                    [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
-                }
-            }];
-
+            
+            [[PINRemoteImageManager sharedImageManager] downloadImageWithURL:_photoURL
+                                                                     options:nil
+                                                               progressImage:nil
+                                                            progressDownload:^(int64_t completedBytes, int64_t totalBytes) {
+                                                                CGFloat progress = ((CGFloat)completedBytes)/((CGFloat)totalBytes);
+                                                                if (self.progressUpdateBlock) {
+                                                                    self.progressUpdateBlock(progress);
+                                                                }
+                                                            }
+                                                                  completion:^(PINRemoteImageManagerResult * _Nonnull result) {
+                                                                      if (result.image) {
+                                                                          self.underlyingImage = result.image;
+                                                                          [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                                                                      }
+                                                                  }];
         } else {
             // Failed - no source
             self.underlyingImage = nil;
