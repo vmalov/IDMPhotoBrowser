@@ -8,7 +8,8 @@
 
 #import "IDMPhoto.h"
 #import "IDMPhotoBrowser.h"
-
+#import <PINRemoteImage/PINImageView+PINRemoteImage.h>
+#import <PINCache.h>
 // Private
 @interface IDMPhoto () {
     // Image Sources
